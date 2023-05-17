@@ -28,6 +28,19 @@ class CommandLineArgsParser(args: Array<String>) {
     }
 }
 
+fun formatBytes(bytes: Long): String {
+    val units = arrayOf("B", "KB", "MB", "GB", "TB")
+    var value = bytes.toDouble()
+    var unitIndex = 0
+
+    while (value >= 1024 && unitIndex < units.size - 1) {
+        value /= 1024
+        unitIndex++
+    }
+
+    return "%.1f%s".format(value, units[unitIndex])
+}
+
 // -l -h -r -o output.txt
 fun main(args: Array<String>) {
     val cmdArgs = CommandLineArgsParser(args)
@@ -37,7 +50,9 @@ fun main(args: Array<String>) {
         cmdArgs.dir = "."
     }
 
-    val files = File(cmdArgs.dir).listFiles()
+    val file1 = File(cmdArgs.dir)
+
+    val files: Array<File> = if (file1.isDirectory) file1.listFiles() else arrayOf(file1)
     val res = mutableMapOf<String, String>() // список файлов, ключ - имя файла, значение - аттрибуты файла в виде строки
     val dateFormat = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
     if (files != null) {
@@ -51,13 +66,15 @@ fun main(args: Array<String>) {
                 val lastModifiedDate = dateFormat.format(lastModified)
 
                 var perms = "${canRead}${canWrite}${canExecute}"
+                var size = file.length().toString()
                 if (cmdArgs.listFilesInHumanReadableFormat) {
                     // приводим права файла к человекочитаемому виду (111 -> rwx)
+                    size = formatBytes(file.length())
                     perms = (if (canRead == 1) "r" else "-") +
                             (if (canWrite == 1) "w" else "-") +
                             (if (canExecute == 1) "x" else "-")
                 }
-                res[file.name] = "${perms}\t${lastModifiedDate}\t${file.length()}"
+                res[file.name] = "${perms}\t${lastModifiedDate}\t${size}"
             } else {
                 res[file.name] = file.name
             }
