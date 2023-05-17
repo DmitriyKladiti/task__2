@@ -1,0 +1,12 @@
+.gitignore
+.gradle
+.idea
+build
+build.gradle.kts
+gradle
+gradle.properties
+gradlew
+gradlew.bat
+out.txt
+settings.gradle.kts
+src
